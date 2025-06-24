@@ -95,7 +95,7 @@ echo "TARGET_DEVICE: $TARGET_DEVICE"
 
 if [ $KSU_ENABLE -eq 1 ]; then
     echo "KSU is enabled"
-    curl -LSs "https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next-susfs/kernel/setup.sh" | bash -s next-susfs
+    curl -LSs "https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next/kernel/setup.sh" | bash -
 else
     echo "KSU is disabled"
 fi
@@ -124,20 +124,20 @@ if [ $KSU_ENABLE -eq 1 ]; then
     scripts/config --file out/.config \
     -e KSU \
     -e KSU_SUSFS_HAS_MAGIC_MOUNT \
-    -e KSU_SUSFS_SUS_PATH \
+    -d KSU_SUSFS_SUS_PATH \
     -e KSU_SUSFS_SUS_MOUNT \
     -e KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT \
     -e KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT \
     -e KSU_SUSFS_SUS_KSTAT \
-    -e KSU_SUSFS_SUS_OVERLAYFS \
+    -d KSU_SUSFS_SUS_OVERLAYFS \
     -e KSU_SUSFS_TRY_UMOUNT \
     -e KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT \
     -e KSU_SUSFS_SPOOF_UNAME \
     -e KSU_SUSFS_ENABLE_LOG \
     -e KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS \
     -e KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG \
-    -e KSU_SUSFS_OPEN_REDIRECT \
-    -e KSU_SUSFS_SUS_SU 
+    -d KSU_SUSFS_OPEN_REDIRECT \
+    -d KSU_SUSFS_SUS_SU 
 else
     scripts/config --file out/.config -d KSU
 fi
@@ -253,20 +253,20 @@ if [ $KSU_ENABLE -eq 1 ]; then
     scripts/config --file out/.config \
     -e KSU \
     -e KSU_SUSFS_HAS_MAGIC_MOUNT \
-    -e KSU_SUSFS_SUS_PATH \
+    -d KSU_SUSFS_SUS_PATH \
     -e KSU_SUSFS_SUS_MOUNT \
     -e KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT \
     -e KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT \
     -e KSU_SUSFS_SUS_KSTAT \
-    -e KSU_SUSFS_SUS_OVERLAYFS \
+    -d KSU_SUSFS_SUS_OVERLAYFS \
     -e KSU_SUSFS_TRY_UMOUNT \
     -e KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT \
     -e KSU_SUSFS_SPOOF_UNAME \
     -e KSU_SUSFS_ENABLE_LOG \
     -e KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS \
     -e KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG \
-    -e KSU_SUSFS_OPEN_REDIRECT \
-    -e KSU_SUSFS_SUS_SU 
+    -d KSU_SUSFS_OPEN_REDIRECT \
+    -d KSU_SUSFS_SUS_SU 
 else
     scripts/config --file out/.config -d KSU
 fi
