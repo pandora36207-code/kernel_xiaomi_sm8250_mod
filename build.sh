@@ -18,8 +18,6 @@ if [ -z "$1" ]; then
     exit 1
 fi
 
-echo "TOOLCHAIN_PATH: [$(which clang)]"
-
 if ! command -v clang >/dev/null 2>&1; then
     echo "[clang] does not exist, please check your environment."
     exit 1
