@@ -49,7 +49,7 @@ MAKE_ARGS=(
 	"HOSTCXX=ccache clang++"
 	LD=ld.lld
 	LLVM=1
-	LLVM_IAS=1
+	LLVM_IAS=0
 )
 
 if [ ! -f "arch/arm64/configs/${TARGET_DEVICE}_defconfig" ]; then
@@ -271,7 +271,6 @@ build_miui() {
 		-e BINDER_OPT \
 		-e KPERFEVENTS \
 		-e MILLET \
-		-d LTO_CLANG \
 		-e PERF_HUMANTASK \
 		-d LOCALVERSION_AUTO \
 		-e SF_BINDER \
