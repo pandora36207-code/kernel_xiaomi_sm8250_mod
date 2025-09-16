@@ -76,7 +76,6 @@ echo "TARGET_DEVICE: $TARGET_DEVICE"
 
 echo "Cleaning..."
 
-rm -rf out/
 rm -rf anykernel/
 
 echo "Clone AnyKernel3 for packing kernel (repo: https://github.com/liyafe1997/AnyKernel3)"
@@ -92,6 +91,9 @@ KOUT_PATH="/mnt/d/users/juan/kernels/${TARGET_DEVICE}/"
 
 build_aosp() {
 	echo "Building for AOSP......"
+	
+	rm -rf out/
+	
 	make "${MAKE_ARGS[@]}" ${TARGET_DEVICE}_defconfig
 
 	sed -i "s/${local_version_str}/${local_version_date_str}/g" out/.config
