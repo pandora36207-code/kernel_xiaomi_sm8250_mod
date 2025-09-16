@@ -94,11 +94,7 @@ build_aosp() {
 	
 	rm -rf out/
 	
-	make "${MAKE_ARGS[@]}" ${TARGET_DEVICE}_defconfig
-
-	sed -i "s/${local_version_str}/${local_version_date_str}/g" out/.config
-
-	if [ $KSU_ENABLE -eq 1 -a "$1" == "$sukisu" ]; then
+	if [ $KSU_ENABLE -eq 1 -a "$1" == "sukisu" ]; then
 		KSU_ZIP_STR=SukiSU-SUSFS
 		curl -LSs "https://github.com/liyafe1997/SukiSU-Ultra/raw/4ff14cf0051d04209c4abd5027d99d8e7780ef5b/kernel/setup.sh" | bash -s f4863b20cc8dc0f8cc67418980f022e43014b598
 	elif [ $KSU_ENABLE -eq 1 ]; then
@@ -107,6 +103,10 @@ build_aosp() {
 	else 
 		KSU_ZIP_STR=NoKernelSU
 	fi
+	
+	make "${MAKE_ARGS[@]}" ${TARGET_DEVICE}_defconfig
+
+	sed -i "s/${local_version_str}/${local_version_date_str}/g" out/.config
 	
 	if [ $KSU_ENABLE -eq 1 ]; then
 		scripts/config --file out/.config \
@@ -136,6 +136,7 @@ build_aosp() {
 		-e KPM \
 		-e KSU_MANUAL_HOOK
 	else
+		scripts/config --file out/.config \
 		-e KSUN
 	fi
 
@@ -196,7 +197,7 @@ build_miui() {
 	echo "Clearning [out/] and build for MIUI....."
 	rm -rf out/
 
-	if [ $KSU_ENABLE -eq 1 -a "$1" == "$sukisu" ]; then
+	if [ $KSU_ENABLE -eq 1 -a "$1" == "sukisu" ]; then
 		KSU_ZIP_STR=SukiSU-SUSFS
 		curl -LSs "https://github.com/liyafe1997/SukiSU-Ultra/raw/4ff14cf0051d04209c4abd5027d99d8e7780ef5b/kernel/setup.sh" | bash -s f4863b20cc8dc0f8cc67418980f022e43014b598
 	elif [ $KSU_ENABLE -eq 1 ]; then
