@@ -323,10 +323,8 @@ source "fs/unicode/Kconfig"
 
 config KSUN
 	bool "Enable hooks for KernelSU-Next"
-	depends on !SUKISU
 	
 config SUKISU
 	bool "Enable hooks for SukiSU"
-	depends on !KSUN
 
 endmenu
