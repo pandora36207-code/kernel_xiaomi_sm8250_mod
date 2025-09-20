@@ -292,7 +292,9 @@ if [ "$3" == "test" ]; then
 	fi
 else
 	build_miui
+	if [ $KSU_ENABLE -eq 1 ]; then
 	build_miui "sukisu"
+	fi
 fi
 
 echo "Done. The flashable zip is: [./$ZIP_FILENAME]"
