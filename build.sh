@@ -65,10 +65,8 @@ clang --version
 
 
 
-KSU_ZIP_STR=NoKernelSU
 if [ "$2" == "ksu" ]; then
     KSU_ENABLE=1
-    KSU_ZIP_STR=KernelSU-Next-SUSFS
 else
     KSU_ENABLE=0
 fi
@@ -76,17 +74,8 @@ fi
 
 echo "TARGET_DEVICE: $TARGET_DEVICE"
 
-if [ $KSU_ENABLE -eq 1 ]; then
-    echo "KSU is enabled"
-    curl -LSs "https://raw.githubusercontent.com/mtkpapa/KernelSU-Next/next-susfs/kernel/setup.sh" | bash -s next-susfs_v1.5.5-v1.5.7
-else
-    echo "KSU is disabled"
-fi
-
-
 echo "Cleaning..."
 
-rm -rf out/
 rm -rf anykernel/
 
 echo "Clone AnyKernel3 for packing kernel (repo: https://github.com/liyafe1997/AnyKernel3)"
@@ -102,10 +91,23 @@ KOUT_PATH="/mnt/d/users/juan/kernels/${TARGET_DEVICE}/"
 
 build_aosp() {
 	echo "Building for AOSP......"
+	
+	rm -rf out/
+	
+	if [ $KSU_ENABLE -eq 1 -a "$1" == "sukisu" ]; then
+		KSU_ZIP_STR=SukiSU-SUSFS
+		curl -LSs "https://github.com/liyafe1997/SukiSU-Ultra/raw/4ff14cf0051d04209c4abd5027d99d8e7780ef5b/kernel/setup.sh" | bash -s f4863b20cc8dc0f8cc67418980f022e43014b598
+	elif [ $KSU_ENABLE -eq 1 ]; then
+		KSU_ZIP_STR=KernelSU-Next-SUSFS
+		curl -LSs "https://raw.githubusercontent.com/mtkpapa/KernelSU-Next/next-susfs/kernel/setup.sh" | bash -s next-susfs_v1.5.5-v1.5.7
+	else 
+		KSU_ZIP_STR=NoKernelSU
+	fi
+	
 	make "${MAKE_ARGS[@]}" ${TARGET_DEVICE}_defconfig
 
 	sed -i "s/${local_version_str}/${local_version_date_str}/g" out/.config
-
+	
 	if [ $KSU_ENABLE -eq 1 ]; then
 		scripts/config --file out/.config \
 		-e KSU \
@@ -127,6 +129,16 @@ build_aosp() {
 	else
 		scripts/config --file out/.config -d KSU
 	fi
+	
+	if [ "$1" == "sukisu" ]; then
+		scripts/config --file out/.config \
+		-e SUKISU \
+		-e KPM \
+		-e KSU_MANUAL_HOOK
+	else
+		scripts/config --file out/.config \
+		-e KSUN
+	fi
 
 	make "${MAKE_ARGS[@]}" -j$(nproc)
 
@@ -144,6 +156,17 @@ build_aosp() {
 	rm -rf anykernel/kernels/
 
 	mkdir -p anykernel/kernels/
+	
+	# Patch for SukiSU KPM support. 
+	if [ $KSU_ENABLE -eq 1 -a "$1" == "sukisu" ]; then
+    cd out/arch/arm64/boot/
+    wget https://github.com/ShirkNeko/SukiSU_KernelPatch_patch/releases/download/0.12.0/patch_linux
+    chmod +x patch_linux
+    ./patch_linux
+    rm Image
+    mv oImage Image
+    cd -
+	fi
 
 	cp out/arch/arm64/boot/Image anykernel/kernels/
 	cp out/arch/arm64/boot/dtb anykernel/kernels/
@@ -158,6 +181,8 @@ build_aosp() {
 
 	cd ..
 
+	rm -rf KernelSU-Next/
+	rm -rf KernelSU/
 
 	echo "Build for AOSP finished."
 }
@@ -172,6 +197,16 @@ build_miui() {
 	echo "Clearning [out/] and build for MIUI....."
 	rm -rf out/
 
+	if [ $KSU_ENABLE -eq 1 -a "$1" == "sukisu" ]; then
+		KSU_ZIP_STR=SukiSU-SUSFS
+		curl -LSs "https://github.com/liyafe1997/SukiSU-Ultra/raw/4ff14cf0051d04209c4abd5027d99d8e7780ef5b/kernel/setup.sh" | bash -s f4863b20cc8dc0f8cc67418980f022e43014b598
+	elif [ $KSU_ENABLE -eq 1 ]; then
+		KSU_ZIP_STR=KernelSU-Next-SUSFS
+		curl -LSs "https://raw.githubusercontent.com/mtkpapa/KernelSU-Next/next-susfs/kernel/setup.sh" | bash -s next-susfs_v1.5.5-v1.5.7
+	else 
+		KSU_ZIP_STR=NoKernelSU
+	fi
+	
 	dts_source=arch/arm64/boot/dts/vendor/qcom
 	
 	# Backup dts
@@ -257,6 +292,14 @@ build_miui() {
 		scripts/config --file out/.config -d KSU
 	fi
 	
+	if [ "$1" == "sukisu" ]; then
+		scripts/config --file out/.config \
+		-e SUKISU \
+		-e KPM \
+		-e KSU_MANUAL_HOOK
+	else
+		-e KSUN
+	fi
 	
 	scripts/config --file out/.config \
 		--set-str STATIC_USERMODEHELPER_PATH /system/bin/micd \
@@ -308,6 +351,17 @@ build_miui() {
 	rm -rf anykernel/kernels/
 	mkdir -p anykernel/kernels/
 	
+	# Patch for SukiSU KPM support. 
+	if [ "$1" == "sukisu" ]; then
+    cd out/arch/arm64/boot/
+    wget https://github.com/ShirkNeko/SukiSU_KernelPatch_patch/releases/download/0.12.0/patch_linux
+    chmod +x patch_linux
+    ./patch_linux
+    rm Image
+    mv oImage Image
+    cd -
+	fi
+	
 	cp out/arch/arm64/boot/Image anykernel/kernels/
 	cp out/arch/arm64/boot/dtb anykernel/kernels/
 	
@@ -322,23 +376,39 @@ build_miui() {
 	mv $ZIP_FILENAME $KOUT_PATH
 	
 	cd ..
+	
+	rm -rf KernelSU-Next/
+	rm -rf KernelSU/
 }
 # ------------- End of Building for MIUI -------------
 #  If you don't need MIUI you can comment out the above block [Building for MIUI]
 
 if [ "$3" == "miui" ]; then
 	echo "MIUI only build"
-	build_miui
+	if [ "$4" == "sukisu" ]; then
+		echo "SukiSU build"
+		build_miui "sukisu"
+	else
+		echo "KernelSU-Next build"
+		build_miui
+	fi
 elif [ "$3" == "aosp" ]; then 
 	echo "AOSP only build"
-	build_aosp
+		if [ "$4" == "sukisu" ]; then
+		echo "SukiSU build"
+		build_aosp "sukisu"
+	else
+		echo "KernelSU-Next build"
+		build_aosp
+	fi
 else
 	build_aosp
+	build_aosp "sukisu"
 	build_miui
+	build_miui "sukisu"
 fi
 
 echo "Done. The flashable zip is: [./$ZIP_FILENAME]"
 
 rm -rf out/
-rm -rf KernelSU-Next/
 rm -rf anykernel/
