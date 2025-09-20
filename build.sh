@@ -87,109 +87,6 @@ local_version_date_str="-IlyafeKernel-$(date +%Y%m%d)"
 
 KOUT_PATH="/mnt/d/users/juan/kernels/${TARGET_DEVICE}/"
 
-# ------------- Building for AOSP -------------
-
-build_aosp() {
-	echo "Building for AOSP......"
-	
-	rm -rf out/
-	
-	if [ $KSU_ENABLE -eq 1 -a "$1" == "sukisu" ]; then
-		KSU_ZIP_STR=SukiSU-SUSFS
-		curl -LSs "https://github.com/liyafe1997/SukiSU-Ultra/raw/4ff14cf0051d04209c4abd5027d99d8e7780ef5b/kernel/setup.sh" | bash -s f4863b20cc8dc0f8cc67418980f022e43014b598
-	elif [ $KSU_ENABLE -eq 1 ]; then
-		KSU_ZIP_STR=KernelSU-Next-SUSFS
-		curl -LSs "https://raw.githubusercontent.com/mtkpapa/KernelSU-Next/next-susfs/kernel/setup.sh" | bash -s next-susfs_v1.5.5-v1.5.7
-	else 
-		KSU_ZIP_STR=NoKernelSU
-	fi
-	
-	make "${MAKE_ARGS[@]}" ${TARGET_DEVICE}_defconfig
-
-	sed -i "s/${local_version_str}/${local_version_date_str}/g" out/.config
-	
-	if [ $KSU_ENABLE -eq 1 ]; then
-		scripts/config --file out/.config \
-		-e KSU \
-		-e KSU_SUSFS_HAS_MAGIC_MOUNT \
-		-d KSU_SUSFS_SUS_PATH \
-		-e KSU_SUSFS_SUS_MOUNT \
-		-e KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT \
-		-e KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT \
-		-e KSU_SUSFS_SUS_KSTAT \
-		-d KSU_SUSFS_SUS_OVERLAYFS \
-		-e KSU_SUSFS_TRY_UMOUNT \
-		-e KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT \
-		-e KSU_SUSFS_SPOOF_UNAME \
-		-e KSU_SUSFS_ENABLE_LOG \
-		-e KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS \
-		-e KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG \
-		-d KSU_SUSFS_OPEN_REDIRECT \
-		-d KSU_SUSFS_SUS_SU 
-	else
-		scripts/config --file out/.config -d KSU
-	fi
-	
-	if [ "$1" == "sukisu" ]; then
-		scripts/config --file out/.config \
-		-e SUKISU \
-		-e KPM \
-		-e KSU_MANUAL_HOOK
-	else
-		scripts/config --file out/.config \
-		-e KSUN
-	fi
-
-	make "${MAKE_ARGS[@]}" -j$(nproc)
-
-
-	if [ -f "out/arch/arm64/boot/Image" ]; then
-		echo "The file [out/arch/arm64/boot/Image] exists. AOSP Build successfully."
-	else
-		echo "The file [out/arch/arm64/boot/Image] does not exist. Seems AOSP build failed."
-		exit 1
-	fi
-
-	echo "Generating [out/arch/arm64/boot/dtb]......"
-	find out/arch/arm64/boot/dts -name '*.dtb' -exec cat {} + >out/arch/arm64/boot/dtb
-
-	rm -rf anykernel/kernels/
-
-	mkdir -p anykernel/kernels/
-	
-	# Patch for SukiSU KPM support. 
-	if [ $KSU_ENABLE -eq 1 -a "$1" == "sukisu" ]; then
-    cd out/arch/arm64/boot/
-    wget https://github.com/ShirkNeko/SukiSU_KernelPatch_patch/releases/download/0.12.0/patch_linux
-    chmod +x patch_linux
-    ./patch_linux
-    rm Image
-    mv oImage Image
-    cd -
-	fi
-
-	cp out/arch/arm64/boot/Image anykernel/kernels/
-	cp out/arch/arm64/boot/dtb anykernel/kernels/
-
-	cd anykernel 
-
-	ZIP_FILENAME=IlyafeKernel_AOSP_${TARGET_DEVICE}_${KSU_ZIP_STR}_$(date +'%Y%m%d_%H%M%S').zip
-
-	zip -r9 $ZIP_FILENAME ./* -x .git .gitignore out/ ./*.zip
-
-	mv $ZIP_FILENAME $KOUT_PATH
-
-	cd ..
-
-	rm -rf KernelSU-Next/
-	rm -rf KernelSU/
-
-	echo "Build for AOSP finished."
-}
-
-# ------------- End of Building for AOSP -------------
-#  If you don't need AOSP you can comment out the above block [Building for AOSP]
-
 
 # ------------- Building for MIUI -------------
 
@@ -298,6 +195,7 @@ build_miui() {
 		-e KPM \
 		-e KSU_MANUAL_HOOK
 	else
+		scripts/config --file out/.config \
 		-e KSUN
 	fi
 	
@@ -383,7 +281,7 @@ build_miui() {
 # ------------- End of Building for MIUI -------------
 #  If you don't need MIUI you can comment out the above block [Building for MIUI]
 
-if [ "$3" == "miui" ]; then
+if [ "$3" == "test" ]; then
 	echo "MIUI only build"
 	if [ "$4" == "sukisu" ]; then
 		echo "SukiSU build"
@@ -392,18 +290,7 @@ if [ "$3" == "miui" ]; then
 		echo "KernelSU-Next build"
 		build_miui
 	fi
-elif [ "$3" == "aosp" ]; then 
-	echo "AOSP only build"
-		if [ "$4" == "sukisu" ]; then
-		echo "SukiSU build"
-		build_aosp "sukisu"
-	else
-		echo "KernelSU-Next build"
-		build_aosp
-	fi
 else
-	build_aosp
-	build_aosp "sukisu"
 	build_miui
 	build_miui "sukisu"
 fi
