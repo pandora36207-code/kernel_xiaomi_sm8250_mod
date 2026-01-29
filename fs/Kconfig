@@ -321,10 +321,4 @@ source "fs/nls/Kconfig"
 source "fs/dlm/Kconfig"
 source "fs/unicode/Kconfig"
 
-config KSUN
-	bool "Enable hooks for KernelSU-Next"
-	
-config SUKISU
-	bool "Enable hooks for SukiSU"
-
 endmenu
