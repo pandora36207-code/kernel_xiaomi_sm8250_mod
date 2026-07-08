@@ -63,8 +63,6 @@ fi
 
 # Check clang is existing.
 clang --version
-ld.lld --version
-llvm-ar --version
 
 
 
