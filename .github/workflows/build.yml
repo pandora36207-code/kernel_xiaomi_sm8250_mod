@@ -30,9 +30,9 @@ jobs:
             unzip \
             python3
 
-      - name: Download Proton Clang
+      - name: Download Zyc Clang
         run: |
-          git clone --depth=1 https://github.com/kdrag0n/proton-clang clang
+          git clone --depth=1 https://github.com/ZyCromerZ/Clang clang
           echo "$GITHUB_WORKSPACE/clang/bin" >> $GITHUB_PATH
 
       - name: Check clang
@@ -44,7 +44,4 @@ jobs:
           sudo mkdir -p /mnt/d/users/juan/kernels/psyche
           sudo chmod -R 777 /mnt/d
 
-      - name: Build Kernel
-        run: |
-          chmod +x build.sh
-          bash build.sh psyche ksu
+     
