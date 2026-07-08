@@ -44,4 +44,7 @@ jobs:
           sudo mkdir -p /mnt/d/users/juan/kernels/psyche
           sudo chmod -R 777 /mnt/d
 
-     
+      - name: Build Kernel
+        run: |
+          chmod +x build.sh
+          bash build.sh psyche ksu
