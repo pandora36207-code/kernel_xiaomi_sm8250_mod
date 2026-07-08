@@ -28,23 +28,31 @@ jobs:
             libelf-dev \
             zip \
             unzip \
-            python3
+            python3 \
+            rsync \
+            lld \
+            llvm
 
-      - name: Download Zyc Clang
+      - name: Download ZyC Clang
         run: |
           git clone --depth=1 https://github.com/ZyCromerZ/Clang clang
           echo "$GITHUB_WORKSPACE/clang/bin" >> $GITHUB_PATH
 
-      - name: Check clang
+      - name: Check Clang
         run: |
           clang --version
+          ld.lld --version
 
-      - name: Create output directory
+      - name: Prepare output directory
         run: |
-          sudo mkdir -p /mnt/d/users/juan/kernels/psyche
-          sudo chmod -R 777 /mnt/d
+          mkdir -p out
 
       - name: Build Kernel
+        env:
+          ARCH: arm64
+          SUBARCH: arm64
         run: |
           chmod +x build.sh
           bash build.sh psyche ksu
+
+     
