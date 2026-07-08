@@ -27,6 +27,7 @@ fi
 # Enable ccache for speed up compiling 
 export CCACHE_DIR="$HOME/.cache/ccache_mikernel" 
 export PATH="/usr/lib/ccache:$PATH"
+export PATH="$GITHUB_WORKSPACE/clang/bin:$PATH"
 echo "CCACHE_DIR: [$CCACHE_DIR]"
 
 
@@ -49,7 +50,7 @@ MAKE_ARGS=(
 	"HOSTCXX=ccache clang++"
 	LD=ld.lld
 	LLVM=1
-	LLVM_IAS=0
+	LLVM_IAS=1
 )
 
 if [ ! -f "arch/arm64/configs/${TARGET_DEVICE}_defconfig" ]; then
@@ -62,6 +63,8 @@ fi
 
 # Check clang is existing.
 clang --version
+ld.lld --version
+llvm-ar --version
 
 
 
@@ -89,7 +92,8 @@ git clone https://github.com/liyafe1997/AnyKernel3 -b kona --single-branch --dep
 local_version_str="-perf"
 local_version_date_str="-IlyafeKernel-$(date +%Y%m%d)"
 
-KOUT_PATH="/mnt/d/users/juan/kernels/${TARGET_DEVICE}/"
+KOUT_PATH="$GITHUB_WORKSPACE/output"
+mkdir -p "$KOUT_PATH"
 
 
 # ------------- Building for MIUI -------------
@@ -157,7 +161,7 @@ build_miui() {
 	
 	
 	
-	if [ -f "out/arch/arm64/boot/Image" ]; then
+	if [ -f "out/arch/arm64/boot/Image" ] || [ -f "out/arch/arm64/boot/Image.gz" ]; then
 		echo "The file [out/arch/arm64/boot/Image] exists. MIUI Build successfully."
 	else
 		echo "The file [out/arch/arm64/boot/Image] does not exist. Seems MIUI build failed."
@@ -170,7 +174,11 @@ build_miui() {
 	rm -rf anykernel/kernels/
 	mkdir -p anykernel/kernels/
 	
-	cp out/arch/arm64/boot/Image anykernel/kernels/
+	if [ -f out/arch/arm64/boot/Image.gz ]; then
+    cp out/arch/arm64/boot/Image.gz anykernel/kernels/Image.gz
+else
+    cp out/arch/arm64/boot/Image anykernel/kernels/Image
+fi
 	cp out/arch/arm64/boot/dtb anykernel/kernels/
 	
 	echo "Build for MIUI finished."
