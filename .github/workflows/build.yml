@@ -28,9 +28,16 @@ jobs:
             libelf-dev \
             zip \
             unzip \
-            python3 \
-            clang \
-            lld
+            python3
+
+      - name: Download Proton Clang
+        run: |
+          git clone --depth=1 https://github.com/kdrag0n/proton-clang clang
+          echo "$GITHUB_WORKSPACE/clang/bin" >> $GITHUB_PATH
+
+      - name: Check clang
+        run: |
+          clang --version
 
       - name: Create output directory
         run: |
