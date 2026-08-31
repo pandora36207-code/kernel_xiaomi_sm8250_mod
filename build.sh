@@ -93,7 +93,7 @@ echo "KSU_ENABLE: $KSU_ENABLE"
 # ---------------------------------------------------------------------------
 
 KSU_SETUP_URL="https://raw.githubusercontent.com/pershoot/KernelSU-Next/dev-susfs/kernel/setup.sh"
-KSU_REF="v3.3.0"
+KSU_REF="dev-susfs"
 
 SUSFS_PATCH_URL="https://raw.githubusercontent.com/JackA1ltman/NonGKI_Kernel_Build_2nd/mainline/Patches/Patch/susfs_patch_to_4.19.patch"
 SUSFS_INLINE_URL="https://raw.githubusercontent.com/JackA1ltman/NonGKI_Kernel_Build_2nd/mainline/Patches/susfs_inline_hook_patches.sh"
